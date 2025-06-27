@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: dio_auth
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "4444:4444"
+    environment:
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: dio_auth
+      DB_HOST: db
+      DB_DIALECT: postgres
+      JWT_SECRET: 171c8322bf8b355858ce1eaa2c8d57ea4e4231181cca8e30feab9daff9bc7f615ca3f3b766b584e8d24912e328f8130eb74af26819df028743d36031e5fadd1d2d39db1c26904b9e3cb36895e72f9d7a94caebc2d2579446f370b2e103e7897b76384febbf40524afd0826e00e33c5cfd72173140df6b1688d8e8ac2f9bd7657fd57c17d71b3f8b34f65924428018db1f60b0ce5454b665d45250d07f006eb0369565d7201019b35d5071d4d5a262305d0200d6de1ff01c9511e749d6ff5246177ea580f4a8987a7a845ed7e0018b7a352a1fd064aa9692b6d4eae9e8d840149c650554ce5ec308edcb301c8d116802e1acf374737c86a0e6559c3cc725ea9e2
+    volumes:
+      - .:/usr/src/app
+    command: npm start
+volumes:
+  postgres_data:
