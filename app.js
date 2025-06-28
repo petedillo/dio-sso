@@ -18,21 +18,23 @@ const app = express();
 // Middleware
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests from all petedillo.com subdomains and localhost for development
+    // Allow requests from all petedillo.com subdomains, auth.petedillo.com, and localhost for development
     const allowedOrigins = [
       /^https?:\/\/([a-z0-9]+\.)?petedillo\.com$/, // All subdomains of petedillo.com
+      /^https?:\/\/auth\.petedillo\.com$/, // Explicitly allow auth.petedillo.com
       /^http:\/\/localhost(:\d+)?$/ // Localhost with any port
     ];
     
     if (!origin || allowedOrigins.some(regex => regex.test(origin))) {
       callback(null, true);
     } else {
+      console.warn('CORS blocked request from origin:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true, // Allow cookies to be sent with requests
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
 app.use(morgan('dev'));
@@ -59,38 +61,21 @@ app.use(passport.session());
 // Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Simple route for the root path
-app.get('/', (req, res) => {
-  res.send('DIO Auth Service is running');
-});
-
-// Serve login page
-app.get('/login', (req, res) => {
+// Serve login page at root
+app.get(['/', '/login'], (req, res) => {
   // If already authenticated, redirect to the service that initiated the login
   if (req.cookies.token) {
     const redirectUrl = req.query.redirect_uri || process.env.FRONTEND_URL || 'http://localhost:3000';
     return res.redirect(redirectUrl);
   }
   
-  // Otherwise, show the login page
-  res.sendFile(path.join(__dirname, 'public', 'login.html'));
-});
-
-// Serve index page (redirect to login or initiating service)
-app.get('/', (req, res) => {
-  // If already authenticated, redirect to the service that initiated the login
-  if (req.cookies.token) {
-    const redirectUrl = req.query.redirect_uri || process.env.FRONTEND_URL || 'http://localhost:3000';
-    return res.redirect(redirectUrl);
-  }
-  
-  // Otherwise, redirect to login with the redirect_uri if provided
+  // If there's a redirect_uri in the query, pass it to the login page
   if (req.query.redirect_uri) {
     return res.redirect(`/login?redirect_uri=${encodeURIComponent(req.query.redirect_uri)}`);
   }
   
-  // Default to login page
-  res.redirect('/login');
+  // Otherwise, show the login page
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
 // Routes
