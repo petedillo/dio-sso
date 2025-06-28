@@ -1,20 +1,23 @@
 # Use Node.js LTS image
 FROM node:20-alpine
 
-# Set working directory
+# Create app directory
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json
+# Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Install production dependencies only
+RUN npm ci --only=production
 
-# Copy the rest of the application code
+# Bundle app source
 COPY . .
+
+# Verify files are in place
+RUN ls -la /usr/src/app/ && [ -f /usr/src/app/package.json ]
 
 # Expose the app port
 EXPOSE 4444
 
-# Start the application
-CMD ["npm", "start"]
+# Set the command to run the app
+CMD ["node", "app.js"]
