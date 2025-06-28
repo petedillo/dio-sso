@@ -62,19 +62,14 @@ app.use(passport.session());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Serve login page at root
-app.get(['/', '/login'], (req, res) => {
+app.get('/', (req, res) => {
   // If already authenticated, redirect to the service that initiated the login
   if (req.cookies.token) {
     const redirectUrl = req.query.redirect_uri || process.env.FRONTEND_URL || 'http://localhost:3000';
     return res.redirect(redirectUrl);
   }
   
-  // If there's a redirect_uri in the query, pass it to the login page
-  if (req.query.redirect_uri) {
-    return res.redirect(`/login?redirect_uri=${encodeURIComponent(req.query.redirect_uri)}`);
-  }
-  
-  // Otherwise, show the login page
+  // Show the login page
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 

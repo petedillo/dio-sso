@@ -71,16 +71,16 @@ router.get('/google/callback', (req, res, next) => {
   // Custom callback to handle redirect validation
   const authenticate = passport.authenticate('google', {
     session: false,
-    failureRedirect: '/login?error=auth_failed'
+    failureRedirect: '/?error=auth_failed'
   }, async (err, user, info) => {
     try {
       if (err || !user) {
         console.error('Google OAuth error:', err || 'No user returned');
-        return res.redirect('/login?error=auth_failed');
+        return res.redirect('/?error=auth_failed');
       }
 
       // Get redirect URI from state or session
-      let redirectUri = '/login';
+      let redirectUri = '/';
       try {
         if (req.query.state) {
           const state = JSON.parse(Buffer.from(req.query.state, 'base64').toString());
@@ -113,7 +113,7 @@ router.get('/google/callback', (req, res, next) => {
       return res.redirect(url.toString());
     } catch (error) {
       console.error('Error in Google OAuth callback:', error);
-      return res.redirect(`/login?error=auth_error`);
+      return res.redirect(`/?error=auth_error`);
     }
   });
   
