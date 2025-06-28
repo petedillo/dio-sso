@@ -49,7 +49,6 @@ dist/
 # Docker
 .docker/
 docker-compose*.yml
-Dockerfile*
 
 # Coverage directory used by testing tools
 coverage/
