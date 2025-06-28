@@ -5,11 +5,12 @@ singleImageBuild(
     registry: 'diolab:5000',
     host: 'serverpi',
     sshCreds: 'jenkins-petedillo',
-    composePath: '/home/pete/services/dio-sso/compose.yaml',
+    composePath: 'docker-compose.yml',  // Changed to relative path
     imageName: 'dio-sso',
     branch: 'main',
     buildArgs: [:],
     contextPath: '.',
+    dockerfile: 'Dockerfile',  // Explicitly specify Dockerfile
     platform: 'linux/arm64',
     push: true
 )
